@@ -1077,8 +1077,10 @@ class BrukerFID(object):
 		self.header = self.__parseMethodFile__(file_dir)
 		self.header_params = list(self.header.keys())
 
-		DigShift = int(self.header['PVM_DigShift']['value'])
-		DigDw    = float(self.header['PVM_DigDw']['value'])
+		print(self.header)
+
+		DigShift = int(68)
+		DigDw    = float(0.1248)
 
 		# CHOP OFF ADC DELAY
 		self.signal = np.array(data_real) + 1j*np.array(data_imag)
@@ -1106,7 +1108,7 @@ class BrukerFID(object):
 
 	def __parseFID__(self, file_dir):
 		f = open(file_dir + '/fid', 'r')
-		data = np.fromfile(f, np.int32)
+		data = np.fromfile(f, np.double)
 		data_real = []
 		data_imag = []
 		for (i, num) in enumerate(data):
@@ -1164,12 +1166,15 @@ class BrukerFID(object):
 		else:
 			out_name = out_name + '.dat'
 
+		if self.Gain is None or len(self.Gain) == 0:
+			self.Gain = [1.0]
+
 		now = dt.datetime.now()
 		
 		data_real = np.real(self.signal)
 		data_imag = -np.imag(self.signal)
 
-		DigDw = float(self.header['PVM_DigDw']['value'])
+		DigDw = float(0.1248)
 		FrqRef = float(self.header['PVM_FrqRef']['value'][0])
 		NAvgs = float(self.header['PVM_NAverages']['value'][0])
 
@@ -1219,8 +1224,8 @@ class BrukerFID(object):
 		RepetitionTime = self.header['PVM_RepetitionTime']['value']
 		NAverages = self.header['PVM_NAverages']['value']
 		FrqRef = self.header['PVM_FrqRef']['value'][0]
-		DigDw = self.header['PVM_DigDw']['value']
-		DigShift = self.header['PVM_DigShift']['value']
+		DigDw = 0.1248
+		DigShift = 68
 
 		# ... assumes single-voxel spectroscopy here ...
 		VoxArrSize = [float(v) for v in self.header['PVM_VoxArrSize']['value']]

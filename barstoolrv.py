@@ -70,7 +70,7 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 			proc = subprocess.Popen(["wsl", "bash", "-c", "grep -oE 'gcc version ([0-9]+)' /proc/version"], stdout=subprocess.PIPE, shell=True)
 			(out, err) = proc.communicate()
 						
-			if int(out.decode().split(' ')[-1]) > 5:
+			if out.decode().split(' ')[-1] > '5':
 				print('WSL2 detected.')
 				proc = subprocess.Popen(["wsl", "echo", "$(cat /etc/resolv.conf | grep nameserver)"], stdout=subprocess.PIPE, shell=True)
 				(out, err) = proc.communicate()
@@ -178,7 +178,7 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 			self.confirmSaveFileButton_quant_bruker.setEnabled(False)
 
 			self.runQuantButton_bruker.clicked.connect(self.runQuant_bruker)
-			self.runQuantButton_bruker.setEnabled(False)
+			self.runQuantButton_bruker.setEnabled(True)
 
 			# Set Up Plotting Region
 			fig_bruker = plt.figure(2)
@@ -811,10 +811,10 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 					print(params)
 					rows.append(params)
 
-		self.metabParamsTableWidget.setRowCount(sp.size(rows,0))
+		self.metabParamsTableWidget.setRowCount(np.size(rows,0))
 		self.metabParamsTableWidget.setColumnCount(8)
 
-		for i in range(0, sp.size(rows, 0)):
+		for i in range(0, np.size(rows, 0)):
 			self.metabParamsTableWidget.setItem(i, 0, QtWidgets.QTableWidgetItem(rows[i][0])) # metabolite
 			self.metabParamsTableWidget.setItem(i, 1, QtWidgets.QTableWidgetItem(rows[i][1])) # protons
 			self.metabParamsTableWidget.setItem(i, 2, QtWidgets.QTableWidgetItem(rows[i][2])) # T1 GM
@@ -958,9 +958,9 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 				sup_dat   = DatFile(mouse + '/sup.dat')
 				unsup_dat = DatFile(mouse + '/metab_uns.dat')
 
-				brain_img = brain.get_data()
-				csf_img   = csf.get_data()
-				vox_img   = vox.get_data()
+				brain_img = brain.get_fdata()
+				csf_img   = csf.get_fdata()
+				vox_img   = vox.get_fdata()
 
 				vox_img_vec = np.reshape(vox_img, np.size(vox_img)).astype(int)
 				csf_img_vec = np.reshape(csf_img, np.size(csf_img)).astype(int)
@@ -1174,17 +1174,23 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 				self.consoleOutputText.append(' >> ' + str(mouse))
 				print('Processing ', mouse, '...')
 
-				brain = nib.load(mouse + '/' + mouse + '_brain.nii.gz')
-				csf   = nib.load(mouse + '/' + mouse + '_csf_mask.nii.gz')
-				vox   = nib.load(mouse + '/' + mouse + '_voxel_overlay.nii.gz')
-				sup_out     = OutputFile(mouse + '/' + mouse + '_sup.out')
-				unsup_out   = OutputFile(mouse + '/' + mouse + '_uns.out')
-				sup_dat   = DatFile(mouse + '/' + mouse + '_sup.dat')
-				unsup_dat = DatFile(mouse + '/' + mouse + '_uns.dat')
+				brain = nib.load(mouse + '/' '_brain.nii.gz')
+				csf   = nib.load(mouse + '/' '_csf_mask.nii.gz')
+				vox   = nib.load(mouse + '/' + '_voxel_overlay.nii.gz')
+				sup_out     = OutputFile(mouse + '/' + 'sup.out')
+				unsup_out   = OutputFile(mouse + '/' + 'uns.out')
+				sup_dat   = DatFile(mouse + '/' + 'sup.dat')
+				unsup_dat = DatFile(mouse + '/' + 'uns.dat')
 
-				brain_img = brain.get_data()
-				csf_img   = csf.get_data()
-				vox_img   = vox.get_data()
+				print(brain)
+				print(csf)
+				print(vox)
+
+				brain_img = brain.get_fdata()
+				csf_img   = csf.get_fdata()
+				vox_img   = vox.get_fdata()
+
+				print(brain_img)
 
 				vox_img_vec = np.reshape(vox_img, np.size(vox_img)).astype(int)
 				csf_img_vec = np.reshape(csf_img, np.size(csf_img)).astype(int)
