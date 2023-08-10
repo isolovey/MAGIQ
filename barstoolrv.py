@@ -1145,8 +1145,8 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 
 	# ---- Methods for Actual Quantification (BRUKER) ---- #
 	def setQuantSaveFile_bruker(self):
-		self.quantSaveFileName_bruker = self.saveFileLineEdit_quant.text()
-		self.runQuantButton.setEnabled(True)
+		self.quantSaveFileName_bruker = self.saveFileLineEdit_quant_bruker.text()
+		self.runQuantButton_bruker.setEnabled(True)
 		self.consoleOutputText.append('Quantification results will be saved to: ' + str(self.quantSaveFileName_bruker))
 		self.consoleOutputText.append('')
 
@@ -1353,9 +1353,9 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 		for mouse in failed_mice:
 			self.consoleOutputText.append(' >> ' + str(mouse))
 
-		self.loadOutputsButton_quant.setEnabled(True)
-		self.confirmSaveFileButton_quant.setEnabled(False)
-		self.runQuantButton.setEnabled(False)
+		self.loadOutputsButton_quant_bruker.setEnabled(True)
+		self.confirmSaveFileButton_quant_bruker.setEnabled(False)
+		self.runQuantButton_bruker.setEnabled(False)
 
 # ---- Launch Application ---- #
 if __name__ == "__main__":
