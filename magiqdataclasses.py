@@ -1105,17 +1105,19 @@ class BrukerFID(object):
 		self.t = sp.arange(0, self.n, 1) * (1/self.fs)
 
 	def __parseFID__(self, file_dir):
-		f = open(file_dir + '/fid', 'r')
-		data = np.fromfile(f, np.int32)
-		data_real = []
-		data_imag = []
-		for (i, num) in enumerate(data):
-			if i % 2 == 0:
-				data_real.append(num)
-			else:
-				data_imag.append(num)
-		f.close()
-		return data_real, data_imag
+		# Alex Li, Aug 09, 2023, from the method file to check the PV version
+		# PV360 in double format, int32 otherwise
+		with open(file_dir + '/method', 'r') as fmethod:
+			isPV360 = "ParaVision 360" in fmethod.readline()
+
+		if not isPV360:
+			with open(file_dir + '/fid', 'r') as f:
+				data = np.fromfile(f, np.int32)
+		else:
+			with open(file_dir + '/pdata/1/fid_proc.64', 'r') as f:
+				data = np.fromfile(f, np.double)
+
+		return data[::2], data[1::2]
 
 	def __parseMethodFile__(self, file_dir):
 		f = open(file_dir + '/method', 'r')
