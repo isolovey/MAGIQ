@@ -21,6 +21,8 @@ from collections import defaultdict
 
 from itertools import groupby
 
+from packaging import version
+
 # ---- Math Libraries ---- #
 import scipy as sp
 import numpy as np
@@ -1070,6 +1072,12 @@ class BrukerFID(object):
 	def __init__(self, file_dir):
 		self.file_dir = file_dir
 
+		self.paravision_version = re.findall(
+			"\<PV\-([0-9\.]+)\>",
+			self.parse_jcamp_dx_file(
+				os.path.join(file_dir, 'acqp')
+			)['ACQ_sw_version']['value']
+		)[0]
 		# READ RAW DATA
 		data_real, data_imag = self.__parseFID__(file_dir)
 
@@ -1112,10 +1120,8 @@ class BrukerFID(object):
 	def __parseFID__(self, file_dir):
 		# Alex Li, Aug 09, 2023, from the method file to check the PV version
 		# PV360 in double format, int32 otherwise
-		with open(file_dir + '/method', 'r') as fmethod:
-			isPV360 = "ParaVision 360" in fmethod.readline()
 
-		if not isPV360:
+		if version.parse(self.paravision_version) < version.parse('360'):
 			with open(file_dir + '/fid', 'r') as f:
 				data = np.fromfile(f, np.int32)
 		else:
@@ -1125,8 +1131,10 @@ class BrukerFID(object):
 		return data[::2], data[1::2]
 
 	def __parseMethodFile__(self, file_dir):
-		f = open(file_dir + '/method', 'r')
-		
+		return self.parse_jcamp_dx_file(os.path.join(file_dir, "method"))
+
+	def parse_jcamp_dx_file(self, file_path):
+		f = open(file_path, 'r')
 		lines = []
 		for line in f:
 			if not('$$ ' in line):
