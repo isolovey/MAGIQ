@@ -225,7 +225,7 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 			self.T7Button.setChecked(False)
 			self.T9Button.setChecked(False)
 
-		dt   = float(data.header['PVM_DigDw']['value']) / 1000
+		dt   = float(data.header['PVM_SpecDwellTime']['value'].item())*2/1e6  # in seconds
 		self.dwellTimeInput_sim.setText(str(dt))
 
 		acqt = dt * int(data.header['PVM_DigNp']['value'])

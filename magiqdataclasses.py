@@ -1078,7 +1078,7 @@ class BrukerFID(object):
 		self.header_params = list(self.header.keys())
 
 		DigShift = int(self.header['PVM_DigShift']['value'])
-		DigDw    = float(self.header['PVM_DigDw']['value'])
+		SpecDwellTime = float(self.header['PVM_SpecDwellTime']['value'].item())  # in microseconds
 
 		# CHOP OFF ADC DELAY
 		self.signal = np.array(data_real) + 1j*np.array(data_imag)
@@ -1101,7 +1101,7 @@ class BrukerFID(object):
 		# | Apply scaling factor to signal
 		self.signal = np.real(self.signal) * self.ConvS + 1j*np.imag(self.signal) * self.ConvS
 
-		self.fs = 1/(DigDw/1000)
+		self.fs = 1/(SpecDwellTime * 2)
 		self.t = sp.arange(0, self.n, 1) * (1/self.fs)
 
 	def __parseFID__(self, file_dir):
@@ -1171,7 +1171,7 @@ class BrukerFID(object):
 		data_real = np.real(self.signal)
 		data_imag = -np.imag(self.signal)
 
-		DigDw = float(self.header['PVM_DigDw']['value'])
+		SpecDwellTime = float(self.header['PVM_SpecDwellTime']['value'].item())  # in microseconds
 		FrqRef = float(self.header['PVM_FrqRef']['value'][0])
 		NAvgs = float(self.header['PVM_NAverages']['value'][0])
 
@@ -1191,7 +1191,7 @@ class BrukerFID(object):
 		o = open(out_name, 'w')
 		o.write(str(np.size(data_real) + np.size(data_imag)) + '\n')
 		o.write('1\n')
-		o.write(str(DigDw/1000.) + '\n')
+		o.write(str(SpecDwellTime*2/1e6) + '\n')  # in seconds
 		o.write(str(FrqRef) + '\n')
 		o.write(str(NAvgs) + '\n')
 		o.write(self.file_dir + '/fid\n')
@@ -1221,7 +1221,7 @@ class BrukerFID(object):
 		RepetitionTime = self.header['PVM_RepetitionTime']['value']
 		NAverages = self.header['PVM_NAverages']['value']
 		FrqRef = self.header['PVM_FrqRef']['value'][0]
-		DigDw = self.header['PVM_DigDw']['value']
+		SpecDwellTime = self.header['PVM_SpecDwellTime']['value'].item()
 		DigShift = self.header['PVM_DigShift']['value']
 
 		# ... assumes single-voxel spectroscopy here ...
@@ -1240,7 +1240,7 @@ class BrukerFID(object):
 		console.append(' | RepetitionTime ' + str(RepetitionTime))
 		console.append(' | NAverages ' + str(NAverages))
 		console.append(' | FrqRef ' + str(FrqRef))
-		console.append(' | DigDw ' + str(DigDw))
+		console.append(' | SpecDwellTime (ms) ' + str(float(SpecDwellTime)*2/1000))
 		console.append(' | DigShift ' + str(DigShift))
 		console.append(' | VoxArrSize ' + str(VoxArrSize))
 		console.append(' | VoxArrPosition ' + str(VoxArrPosition))
