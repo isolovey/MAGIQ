@@ -231,7 +231,7 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 		acqt = dt * int(data.header['PVM_DigNp']['value'])
 		self.acqLengthInput_sim.setText(str(acqt))
 
-		digshift = int(data.header['PVM_DigShift']['value'])
+		digshift = int(data.digShift)
 		self.digShiftInput_bruker.setText(str(digshift))
 
 		te   = float(data.header['PVM_EchoTime']['value'])

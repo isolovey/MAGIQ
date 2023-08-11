@@ -183,7 +183,7 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 		sup_file.print_params(self.conversionConsole_bruker)
 		self.conversionConsole_bruker.append('')
 		self.scaleFactorInput_bruker.setText(str(sup_file.ConvS))
-		self.timeDelayInput_bruker.setText(str(float(sup_file.header['PVM_DigShift']['value']) * 1/sup_file.fs))
+		self.timeDelayInput_bruker.setText(str(float(sup_file.digShift) * 1/sup_file.fs))
 
 		# Read unsuppressed file
 		uns_file = BrukerFID(str(self.referenceFilenameInput_bruker.text()))

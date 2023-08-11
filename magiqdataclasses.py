@@ -1077,12 +1077,17 @@ class BrukerFID(object):
 		self.header = self.__parseMethodFile__(file_dir)
 		self.header_params = list(self.header.keys())
 
-		DigShift = int(self.header['PVM_DigShift']['value'])
 		SpecDwellTime = float(self.header['PVM_SpecDwellTime']['value'].item())  # in microseconds
+		self.signal = np.array(data_real) + 1j*np.array(data_imag)
+
+		if 'PVM_DigShift' in self.header:
+			self.digShift = int(self.header['PVM_DigShift']['value'])
+		else:
+			self.digShift = np.argmax(np.abs(self.signal)) + 3  # 3 is an arbitrary number, can be anything small > 0
+
 
 		# CHOP OFF ADC DELAY
-		self.signal = np.array(data_real) + 1j*np.array(data_imag)
-		self.signal = self.signal[DigShift:]
+		self.signal = self.signal[self.digShift:]
 		self.n = np.size(self.signal, 0)
 
 		# SCALE SIGNAL SUCH THAT MAGNITUDE OF FID IS BETWEEN 1 AND 10
@@ -1222,7 +1227,7 @@ class BrukerFID(object):
 		NAverages = self.header['PVM_NAverages']['value']
 		FrqRef = self.header['PVM_FrqRef']['value'][0]
 		SpecDwellTime = self.header['PVM_SpecDwellTime']['value'].item()
-		DigShift = self.header['PVM_DigShift']['value']
+		DigShift = self.digShift
 
 		# ... assumes single-voxel spectroscopy here ...
 		VoxArrSize = [float(v) for v in self.header['PVM_VoxArrSize']['value']]
