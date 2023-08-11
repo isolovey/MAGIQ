@@ -958,9 +958,9 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 				sup_dat   = DatFile(mouse + '/sup.dat')
 				unsup_dat = DatFile(mouse + '/metab_uns.dat')
 
-				brain_img = brain.get_data()
-				csf_img   = csf.get_data()
-				vox_img   = vox.get_data()
+				brain_img = brain.get_fdata()
+				csf_img   = csf.get_fdata()
+				vox_img   = vox.get_fdata()
 
 				vox_img_vec = np.reshape(vox_img, np.size(vox_img)).astype(int)
 				csf_img_vec = np.reshape(csf_img, np.size(csf_img)).astype(int)
@@ -1182,9 +1182,9 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 				sup_dat   = DatFile(mouse + '/' + mouse + '_sup.dat')
 				unsup_dat = DatFile(mouse + '/' + mouse + '_uns.dat')
 
-				brain_img = brain.get_data()
-				csf_img   = csf.get_data()
-				vox_img   = vox.get_data()
+				brain_img = brain.get_fdata()
+				csf_img   = csf.get_fdata()
+				vox_img   = vox.get_fdata()
 
 				vox_img_vec = np.reshape(vox_img, np.size(vox_img)).astype(int)
 				csf_img_vec = np.reshape(csf_img, np.size(csf_img)).astype(int)
