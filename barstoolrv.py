@@ -1202,9 +1202,6 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 
 				self.consoleOutputText.append(' >> ' + str(mouse))
 				print('Processing ', mouse, '...')
-				brain_img = brain.get_fdata()
-				csf_img   = csf.get_fdata()
-				vox_img   = vox.get_fdata()
 				get_filename = lambda dataset_ext: os.path.join(mouse, self.mouseIDsBruker[i] + dataset_ext)
 
 				brain = nib.load(get_filename('_brain.nii.gz'))
@@ -1215,6 +1212,9 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 				sup_dat = DatFile(get_filename('_sup.dat'))
 				unsup_dat = DatFile(get_filename('_uns.dat'))
 
+				brain_img = np.around(brain.get_fdata())
+				csf_img   = np.around(csf.get_fdata())
+				vox_img   = np.around(vox.get_fdata())
 
 				vox_img_vec = np.reshape(vox_img, np.size(vox_img)).astype(int)
 				csf_img_vec = np.reshape(csf_img, np.size(csf_img)).astype(int)
