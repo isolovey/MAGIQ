@@ -9,6 +9,9 @@ import subprocess
 
 # Check for PyQt6 (for native mac M1 compatibility), otherwise continue using PyQt5
 import importlib
+
+from nibabel.filebasedimages import ImageFileError
+
 PyQt6_spec = importlib.util.find_spec("PyQt6")
 if PyQt6_spec != None:
 	from PyQt6 import QtCore, QtGui, QtWidgets, uic
@@ -395,8 +398,33 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 
 			self.consoleOutputText.append('==== RATS_MM ====')
 			self.consoleOutputText.append('Loading ' + str(img_file))
-				
-			img = nib.nifti1.load(img_file)
+
+			try:
+				img = nib.nifti1.load(img_file)
+			except FileNotFoundError:
+				file_dialog = QtWidgets.QFileDialog(directory=self.workingDirectory)
+				file_dialog.setWindowTitle("Select structural image in Nifti or DICOM format")
+				file_dialog.setOption(QtWidgets.QFileDialog.DontUseNativeDialog, True)
+				file_view = file_dialog.findChild(QtWidgets.QListView, 'listView')
+
+				if file_dialog.exec():
+					paths = file_dialog.selectedFiles()
+				else:
+					raise RuntimeError("No valid structural Nifti file selected for brain extraction")
+
+				try:
+					img = nib.nifti1.load(paths[0])
+					os.link(paths[0], img_file)
+				except ImageFileError:
+					cmd = [
+						'dcm2niix', '-z', 'y', '-o', os.path.dirname(img_file),
+						'-f', os.path.basename(img_file)[:-len('.nii.gz')],
+						paths[0]
+					]
+					self.consoleOutputText.append(' Converting to DICOM to Nifti: ' + ' '.join(cmd))
+					self.consoleOutputText.append(subprocess.check_output(cmd).decode() + '\n')
+					img = nib.nifti1.load(img_file)
+
 			img_data = np.asanyarray(img.dataobj)
 	
 			k = int(self.ratsMM_k.text())
