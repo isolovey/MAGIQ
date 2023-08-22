@@ -1209,8 +1209,8 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 				scale_sup = fid_sup.ConvS
 				scale_uns = fid_uns.ConvS
 
-				gain_sup = fid_sup.Gain[0]
-				gain_uns = fid_uns.Gain[0]
+				gain_sup = fid_sup.gain()[0]
+				gain_uns = fid_uns.gain()[0]
 
 				print('n_avg_sup:\t', n_avg_sup, '\t', end=' ')
 				print('n_avg_uns:\t', n_avg_uns)

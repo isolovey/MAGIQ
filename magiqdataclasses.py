@@ -1093,7 +1093,6 @@ class BrukerFID(object):
 		else:
 			self.digShift = np.argmax(np.abs(self.signal)) + 3  # 3 is an arbitrary number, can be anything small > 0
 
-
 		# CHOP OFF ADC DELAY
 		self.signal = self.signal[self.digShift:]
 		self.n = np.size(self.signal, 0)
@@ -1173,6 +1172,13 @@ class BrukerFID(object):
 
 		return param_dict
 
+	def gain(self):
+		if np.size(self.header['PVM_EncChanScaling']['value']) > 1:
+			EncChanScaling = [float(v) for v in self.header['PVM_EncChanScaling']['value']]
+		else:
+			EncChanScaling = [float(self.header['PVM_EncChanScaling']['value'])]
+		return EncChanScaling
+
 	def writeDAT(self, out_name, suffix=''):
 		if not(suffix is ''):
 			out_name = out_name + '_' + suffix + '.dat'
@@ -1192,12 +1198,6 @@ class BrukerFID(object):
 		VoxArrSize = [float(v) for v in self.header['PVM_VoxArrSize']['value']]
 		VoxArrPosition = [float(v) for v in self.header['PVM_VoxArrPosition']['value']]
 
-		if np.size(self.header['PVM_EncChanScaling']['value']) > 1:
-			EncChanScaling = [float(v) for v in self.header['PVM_EncChanScaling']['value']]
-		else:
-			EncChanScaling = [float(self.header['PVM_EncChanScaling']['value'])]
-		self.Gain = EncChanScaling
-
 		EchoTime = float(self.header['PVM_EchoTime']['value'])
 		RepetitionTime = float(self.header['PVM_RepetitionTime']['value'])
 
@@ -1213,7 +1213,7 @@ class BrukerFID(object):
 		o.write('V1=' + str(VoxArrSize[0]) + ' ' + 'V2=' + str(VoxArrSize[1]) + ' ' + 'V3=' + str(VoxArrSize[2]) + '\n')
 		o.write('TE=' + str(EchoTime / 1000.) + ' s ')
 		o.write('TR=' + str(RepetitionTime / 1000.) + ' s ')
-		o.write('P1=' + str(VoxArrPosition[0]) + ' P2=' + str(VoxArrPosition[1]) + ' P3=' + str(VoxArrPosition[2]) + ' Gain=' + str(EncChanScaling[0]) + '\n')
+		o.write('P1=' + str(VoxArrPosition[0]) + ' P2=' + str(VoxArrPosition[1]) + ' P3=' + str(VoxArrPosition[2]) + ' Gain=' + str(self.gain()[0]) + '\n')
 		o.write('SIMULTANEOUS\n0.0\n')
 		o.write('EMPTY\n')
 
@@ -1242,12 +1242,6 @@ class BrukerFID(object):
 		VoxArrPosition = [float(v) for v in self.header['PVM_VoxArrPosition']['value']]
 		VoxArrPositionRPS = [float(v) for v in self.header['PVM_VoxArrPositionRPS']['value']]
 
-		if np.size(self.header['PVM_EncChanScaling']['value']) > 1:
-			EncChanScaling = [float(v) for v in self.header['PVM_EncChanScaling']['value']]
-		else:
-			EncChanScaling = [float(self.header['PVM_EncChanScaling']['value'])]
-		self.Gain = EncChanScaling
-
 		console.append(' | file_dir ' + str(self.file_dir))
 		console.append(' | EchoTime ' + str(EchoTime))
 		console.append(' | RepetitionTime ' + str(RepetitionTime))
@@ -1258,7 +1252,7 @@ class BrukerFID(object):
 		console.append(' | VoxArrSize ' + str(VoxArrSize))
 		console.append(' | VoxArrPosition ' + str(VoxArrPosition))
 		console.append(' | VoxArrPositionRPS ' + str(VoxArrPositionRPS))
-		console.append(' | EncChanScaling ' + str(EncChanScaling))
+		console.append(' | EncChanScaling ' + str(self.gain()))
 		console.append(' | n ' + str(self.n))
 		console.append(' | ConvS ' + str(self.ConvS))
 		console.append(' | fs ' + str(self.fs))
