@@ -1202,18 +1202,19 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 
 				self.consoleOutputText.append(' >> ' + str(mouse))
 				print('Processing ', mouse, '...')
-
-				brain = nib.load(mouse + '/' + mouse + '_brain.nii.gz')
-				csf   = nib.load(mouse + '/' + mouse + '_csf_mask.nii.gz')
-				vox   = nib.load(mouse + '/' + mouse + '_voxel_overlay.nii.gz')
-				sup_out     = OutputFile(mouse + '/' + mouse + '_sup.out')
-				unsup_out   = OutputFile(mouse + '/' + mouse + '_uns.out')
-				sup_dat   = DatFile(mouse + '/' + mouse + '_sup.dat')
-				unsup_dat = DatFile(mouse + '/' + mouse + '_uns.dat')
-
 				brain_img = brain.get_fdata()
 				csf_img   = csf.get_fdata()
 				vox_img   = vox.get_fdata()
+				get_filename = lambda dataset_ext: os.path.join(mouse, self.mouseIDsBruker[i] + dataset_ext)
+
+				brain = nib.load(get_filename('_brain.nii.gz'))
+				csf = nib.load(get_filename('_csf_mask.nii.gz'))
+				vox = nib.load(get_filename('_voxel_overlay.nii.gz'))
+				sup_out = OutputFile(get_filename('_sup.out'))
+				unsup_out = OutputFile(get_filename('_uns.out'))
+				sup_dat = DatFile(get_filename('_sup.dat'))
+				unsup_dat = DatFile(get_filename('_uns.dat'))
+
 
 				vox_img_vec = np.reshape(vox_img, np.size(vox_img)).astype(int)
 				csf_img_vec = np.reshape(csf_img, np.size(csf_img)).astype(int)
