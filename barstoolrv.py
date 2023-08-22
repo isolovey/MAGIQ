@@ -22,7 +22,7 @@ from collections import defaultdict
 
 # ---- Math Libraries ---- #
 import scipy as sp
-
+from scipy import stats
 import numpy as np
 
 # ---- Plotting Libraries ---- #
@@ -431,14 +431,15 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 			t = int(np.mean(img_data)); self.ratsMM_t.setText(str(int(np.mean(img_data))))
 			v = int(self.ratsMM_v.text())
 
+			cmd = [f'{os.getcwd()}/barstoolrv/RATS_MM', '-k', str(k), '-t', str(t), '-v', str(v)]
 			if os.name == 'nt':
 				img_file_path = subprocess.check_output('wsl wslpath -u "' + img_file + '"').decode().rstrip()
 				mas_file_path = subprocess.check_output('wsl wslpath -u "' + mas_file + '"').decode().rstrip()
 				self.consoleOutputText.append(' | ' + str(img_file_path))
-				cmd = 'wsl ./barstoolrv/RATS_MM -k ' + str(k) + ' -t ' + str(t) + ' -v ' + str(v) + ' "' + img_file_path + '" "' + mas_file_path + '"'
+				cmd = ['wsl'] + cmd + [img_file_path, mas_file_path]
 			else:
-				cmd = './barstoolrv/RATS_MM -k ' + str(k) + ' -t ' + str(t) + ' -v ' + str(v) + ' "' + img_file + '" "' + mas_file + '"'
-			self.consoleOutputText.append(' >> ' + cmd)
+				cmd += [img_file, mas_file]
+			self.consoleOutputText.append(' >> ' + ' '.join(cmd))
 			self.consoleOutputText.append(subprocess.check_output(cmd).decode() + '\n')
 
 			mas = nib.nifti1.load(mas_file)
@@ -559,10 +560,10 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 			vox_img_vec   = np.array([np.round(v) for v in vox_img_vec]).astype(int)
 
 			brain_img_vec_masked = brain_img_vec[mask_img_vec.astype(bool)]
-			brain_kde = sp.stats.gaussian_kde(brain_img_vec_masked)
+			brain_kde = stats.gaussian_kde(brain_img_vec_masked)
 
 			brain_img_vec_vox_masked = brain_img_vec[vox_img_vec.astype(bool)]
-			vox_kde = sp.stats.gaussian_kde(brain_img_vec_vox_masked)
+			vox_kde = stats.gaussian_kde(brain_img_vec_vox_masked)
 
 			if self.csfThreshMode1_bruker.isChecked():
 				for i, elem in enumerate(np.linspace(np.min(brain_img_vec), np.max(brain_img_vec), 1000)):
@@ -755,7 +756,7 @@ class MyApp(QtWidgets.QWidget, Ui_MainWindow):
 			mask_img_vec  = np.reshape(mask_img,  np.size(mask_img )).astype(int)
 
 			brain_img_vec_masked = brain_img_vec[mask_img_vec.astype(bool)]
-			brain_kde = sp.stats.gaussian_kde(brain_img_vec_masked)
+			brain_kde = stats.gaussian_kde(brain_img_vec_masked)
 
 			for i, elem in enumerate(np.linspace(np.min(brain_img_vec), np.max(brain_img_vec), 1000)):
 				if brain_kde.integrate_box_1d(np.min(brain_img_vec), elem) > float(self.csfThreshLineEdit.text()):
