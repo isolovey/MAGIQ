@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  magiq:
+    build: .
+    volumes:
+      # map the app
+      - ..:/app
+      # map any additional data directories here
+      #- /path/to/my/local/data/dir:/data
+    environment:
+      # Set up VNC
+      - DISPLAY=novnc:0.0
+      # Set up Matlab licence
+      - MLM_LICENSE_FILE=27000@WTS-Matlab.wts.uwo.pri
+    depends_on:
+      novnc:
+        condition: service_healthy
+    networks:
+      - x11
+  novnc:
+    image: theasp/novnc:latest
+    environment:
+      # Adjust to your screen size
+      - DISPLAY_WIDTH=1600
+      - DISPLAY_HEIGHT=968
+      - RUN_XTERM=no
+    ports:
+      - "8080:8080"
+    networks:
+      - x11
+    healthcheck:
+      test: "bash -c 'printf \"GET / HTTP/1.1\n\n\" > /dev/tcp/127.0.0.1/8080; exit $?;'"
+      interval: 3s
+      timeout: 1s
+      retries: 10
+networks:
+  x11:
