@@ -47,6 +47,9 @@ RUN cd /opt/matlab/R2020b/extern/engines/python && pyenv exec python setup.py in
 # Install dcm2niix
 RUN apt install -y dcm2niix pigz
 
+# Install python libraries needed by scripts
+RUN pyenv exec pip install dicomweb_client python-keycloak ipython pyyaml
+
 WORKDIR /app
 
 CMD pyenv exec python ./main.py
