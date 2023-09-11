@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 import subprocess
 from urllib.parse import urlparse
 
@@ -11,7 +12,7 @@ import pydicom
 import zipfile
 import io
 import yaml
-
+import dirsync
 
 def deflate_dataset(data, output_directory):
     with zipfile.ZipFile(io.BytesIO(data), "r") as zf:
@@ -53,15 +54,16 @@ if __name__ == "__main__":
     command_args = p.parse_args()
     with open(command_args.config, 'r') as file:
         config = yaml.safe_load(file)
+        dl_config = config['download']
 
     keycloak_openid = KeycloakOpenID(
-        server_url=config['keycloak_server'],
-        client_id=config['keycloak_client'],
-        realm_name=config['keycloak_realm'],
+        server_url=dl_config['keycloak_server'],
+        client_id=dl_config['keycloak_client'],
+        realm_name=dl_config['keycloak_realm'],
     )
 
     password = os.environ["USER_PASSWORD"]
-    auth = keycloak_openid.token(username=config['user'], password=password)
+    auth = keycloak_openid.token(username=dl_config['user'], password=password)
 
     client = DICOMwebClient(
         url="https://dicom.cfmm.uwo.ca/dcm4chee-arc/aets/CFMMARC/rs",
@@ -72,23 +74,24 @@ if __name__ == "__main__":
         pydicom.dataset.Dataset.from_json(s)
         for s in client.search_for_studies(
             # "20220201-20230901"
-            search_filters=config['study_filters']
+            search_filters=dl_config['study_filters']
         )
     ]
 
     studies.sort(key=lambda x: x.StudyDate)
 
+    print("Downloading and pre-processing DICOM datasets.")
     for study in studies:
         spectroscopy_series = [
             pydicom.dataset.Dataset.from_json(s)
             for s in client.search_for_series(
-                study.StudyInstanceUID, search_filters=config['spectroscopy_filters']
+                study.StudyInstanceUID, search_filters=dl_config['spectroscopy_filters']
             )
         ]
         structural_series = [
             pydicom.dataset.Dataset.from_json(s)
             for s in client.search_for_series(
-                study.StudyInstanceUID, search_filters=config['structural_filters']
+                study.StudyInstanceUID, search_filters=dl_config['structural_filters']
             )
         ]
         if len(spectroscopy_series) == 1:
@@ -104,6 +107,7 @@ if __name__ == "__main__":
                 url=f"{spectroscopy_instances[0].RetrieveURL}/bulkdata"
             )
             study_id = f"{study.StudyDate}_{study.PatientName}"
+            print(f'--- Processing {study_id}')
             study_directory = f"{config['output_directory']}{os.sep}{study_id}"
             structural_directory = f"{study_directory}{os.sep}structural"
             os.makedirs(structural_directory, exist_ok=True)
@@ -127,22 +131,30 @@ if __name__ == "__main__":
             )
 
             if config['preprocess']['convert_to_nifti']:
-                cmd = [
-                    'dcm2niix', '-z', 'y', '-o', study_directory,
-                    '-f', study_id, structural_directory
-                ]
-                print(f"Converting DICOM to Nifti ({cmd})")
-                print(subprocess.check_output(cmd).decode())
+                if not os.path.exists(os.path.join(study_directory, study_id + '.nii.gz')):
+                    cmd = [
+                        'dcm2niix', '-z', 'y', '-o', study_directory,
+                        '-f', study_id, structural_directory
+                    ]
+                    print("Converting DICOM to Nifti")
+                    print(subprocess.check_output(cmd).decode())
+                else:
+                    print('Nifti file exists, skipping')
             if config['preprocess']['rename']:
+                print("Renaming")
                 for source, destination in config['preprocess']['rename'].items():
                     try:
-                        os.rename(
+                        dirsync.sync(
                             f"{study_directory}{os.sep}{source}",
-                            f"{study_directory}{os.sep}{destination}"
+                            f"{study_directory}{os.sep}{destination}",
+                            action="sync",
+                            create=True,
                         )
+                        shutil.rmtree(f"{study_directory}{os.sep}{source}")
                     except FileNotFoundError:
                         print(f"ERROR: did not find {study_directory}{os.sep}{source}")
         else:
             assert (
                     len(spectroscopy_series) == 0
             ), "Found study with >1 spectroscopy series"
+    print("Finished downloading and pre-processing DICOM datasets.")
