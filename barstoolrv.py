@@ -8,7 +8,7 @@ import os
 import subprocess
 
 # Check for PyQt6 (for native mac M1 compatibility), otherwise continue using PyQt5
-import importlib
+import importlib.util
 
 from nibabel.filebasedimages import ImageFileError
 

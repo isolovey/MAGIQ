@@ -11,7 +11,7 @@ import time
 import platform
 
 # Check for PyQt6 (native mac M1 compatibility), otherwise continue using PyQt5
-import importlib
+import importlib.util
 PyQt6_spec = importlib.util.find_spec("PyQt6")
 if PyQt6_spec != None:
 	from PyQt6 import QtCore, QtGui, QtWidgets, uic
